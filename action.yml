@@ -18,7 +18,6 @@ runs:
         echo "IMAGE_TAG=ghcr.io/kimjunil/action-test:${{ inputs.version }}" >> $GITHUB_ENV
         echo "GH_USER=$GH_USER" >> $GITHUB_ENV
         echo "GH_TOKEN=$GH_TOKEN" >> $GITHUB_ENV
-        echo "IMAGE_TAG=ghcr.io/kimjunil/action-test:${{ inputs.version }}" >> $GITHUB_ENV
       shell: bash
     - name: Docker Build & Push
       run: |
@@ -45,14 +44,17 @@ runs:
         echo "PROJECT_NAME=${{ inputs.project }}" >> $GITHUB_ENV
         echo "FLYTE_DOMAIN=${{ inputs.domain }}" >> $GITHUB_ENV
         echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+        echo "FLYTE_ENDPOINT=$FLYTE_ENDPOINT" >> $GITHUB_ENV
+        echo "FLYTE_CLIENT_ID=$FLYTE_CLIENT_ID" >> $GITHUB_ENV
+        echo "FLYTE_CLIENT_SECRET=$FLYTE_CLIENT_SECRET" >> $GITHUB_ENV
       shell: bash
 
     - name: Setup flyte_config.yaml
       run: |
-        echo '$FLYTE_CLIENT_SECRET' >> /tmp/flyte_admin_secret
-        ./yq e --inplace '.admin.endpoint = "$FLYTE_ENDPOINT"' flyte_config.yaml
+        echo '${{ env.FLYTE_CLIENT_SECRET }}' >> /tmp/flyte_admin_secret
+        ./yq e --inplace '.admin.endpoint = "${{ env.FLYTE_ENDPOINT }}"' flyte_config.yaml
         ./yq e --inplace '.admin.authType = "ClientSecret"' flyte_config.yaml
-        ./yq e --inplace '.admin.clientId = "$FLYTE_CLIENT_ID"' flyte_config.yaml
+        ./yq e --inplace '.admin.clientId = "${{ env.FLYTE_CLIENT_ID }}"' flyte_config.yaml
         ./yq e --inplace '.admin.clientSecretLocation = "/tmp/flyte_admin_secret"' flyte_config.yaml
         mkdir -p ~/.flyte
         cp flyte_config.yaml ~/.flyte/config.yaml
