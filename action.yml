@@ -4,6 +4,12 @@ inputs:
   version:  # id of input
     description: 'Who to greet'
     required: true
+  project:  # id of input
+    description: 'Who to greet'
+    required: true
+  domain:  # id of input
+    description: 'Who to greet'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -19,4 +25,89 @@ runs:
         docker login ghcr.io -u ${{ env.GH_USER }} -p ${{ env.GH_TOKEN }}
         docker build -t ${{ env.IMAGE_TAG }} .
         docker push  ${{ env.IMAGE_TAG }}
+      shell: bash
+
+    - name: Install tools
+      run: |
+        curl -sL https://ctl.flyte.org/install | bash
+        mv bin/flytectl /usr/bin/
+        apt-get update
+        apt-get install wget jq -y
+        wget https://github.com/mikefarah/yq/releases/download/v4.27.2/yq_linux_amd64 --output-document yq
+        chmod +x ./yq
+        pip install tomlq
+      shell: bash
+
+    - name: Setup environment variables.
+      run: |
+        pip install yq==3.1.0
+        echo "FLYTE_PROJECT=${{ inputs.domain }}" >> $GITHUB_ENV
+        echo "PROJECT_NAME=${{ inputs.project }}" >> $GITHUB_ENV
+        echo "FLYTE_DOMAIN=${{ inputs.domain }}" >> $GITHUB_ENV
+        echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Setup flyte_config.yaml
+      run: |
+        echo '$FLYTE_CLIENT_SECRET' >> /tmp/flyte_admin_secret
+        ./yq e --inplace '.admin.endpoint = "$FLYTE_ENDPOINT"' flyte_config.yaml
+        ./yq e --inplace '.admin.authType = "ClientSecret"' flyte_config.yaml
+        ./yq e --inplace '.admin.clientId = "$FLYTE_CLIENT_ID"' flyte_config.yaml
+        ./yq e --inplace '.admin.clientSecretLocation = "/tmp/flyte_admin_secret"' flyte_config.yaml
+        mkdir -p ~/.flyte
+        cp flyte_config.yaml ~/.flyte/config.yaml
+      shell: bash
+      
+    - name: Create project
+      run: |
+        flytectl create project --name ${{ env.FLYTE_PROJECT }} --id ${{ env.FLYTE_PROJECT }} || true
+          if [ ! -z "${{ env.FLYTE_DESCRIPTION }}" ]; then
+          flytectl update project -p ${{ env.FLYTE_PROJECT }} --description ${{ env.FLYTE_DESCRIPTION }}
+          fi
+      shell: bash
+
+    - name: Archive execution
+      run: |
+        (flytectl get execution -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --filter.fieldSelector="execution.phase in (RUNNING)" -o json || echo "") | jq -rc 'if type=="array" then map(.id)[] else .id end' | while read id; do
+            name=$(echo $id | jq -r .name)
+            version=$(echo $id | jq -r .version)
+            flytectl update execution $name -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --archive
+        done
+      shell: bash
+
+    - name: Archive launchplans
+      run: |
+        (flytectl get launchplan -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --filter.fieldSelector "state=1" -o json || echo "") | jq -rc 'if type=="array" then map(.id)[] else .id end' | while read id; do
+            name=$(echo $id | jq -r .name)
+            version=$(echo $id | jq -r .version)
+            flytectl update launchplan $name -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version $version --archive
+            echo
+        done
+      shell: bash
+
+    - name: Serialize project
+      run: |
+        mkdir _pb_output
+        echo pyflyte --pkgs ${{ env.PROJECT_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
+        pyflyte --pkgs ${{ env.PROJECT_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
+      shell: bash
+
+    - name: Register serialized project
+      run: |
+        flytectl register files _pb_output/* -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }}
+      shell: bash
+      
+    - name: Activate scheduled launchplans
+      run: |
+        tomlq -rc '.qraft.flyte.schedule_launch_plans[]?' pyproject.toml | while read name; do
+            flytectl update launchplan $name -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }} --activate
+        done
+      shell: bash
+
+    - name: Create execution launchplans
+      run: |
+        tomlq -rc '.qraft.flyte.execute_launch_plans[]?' pyproject.toml | while read name; do
+            flytectl get launchplan $name -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }} --execFile ${name}_spec.yaml
+            flytectl create execution -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }} --execFile ${name}_spec.yaml
+        done
       shell: bash
