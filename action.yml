@@ -30,11 +30,11 @@ runs:
     - name: Install tools
       run: |
         curl -sL https://ctl.flyte.org/install | bash
-        mv bin/flytectl /usr/bin/
-        apt-get update
-        apt-get install wget jq -y
+        sudo mv bin/flytectl /usr/bin/
+        sudo apt-get update
+        sudo apt-get install wget jq -y
         wget https://github.com/mikefarah/yq/releases/download/v4.27.2/yq_linux_amd64 --output-document yq
-        chmod +x ./yq
+        sudo chmod +x ./yq
         pip install tomlq
       shell: bash
 
