@@ -1,14 +1,14 @@
 name: 'Flyte Run Action'
-description: 'Greet someone'
+description: 'Run on flyte'
 inputs:
-  version:  # id of input
-    description: 'Who to greet'
+  version:
+    description: 'Version of launchplan'
     required: true
   project:  # id of input
-    description: 'Who to greet'
+    description: 'Project name'
     required: true
   domain:  # id of input
-    description: 'Who to greet'
+    description: 'Project domain'
     required: true
 runs:
   using: "composite"
@@ -40,7 +40,7 @@ runs:
     - name: Setup environment variables.
       run: |
         pip install yq==3.1.0
-        echo "FLYTE_PROJECT=${{ inputs.domain }}" >> $GITHUB_ENV
+        echo "FLYTE_PROJECT=${{ inputs.project }}" >> $GITHUB_ENV
         echo "PROJECT_NAME=${{ inputs.project }}" >> $GITHUB_ENV
         echo "FLYTE_DOMAIN=${{ inputs.domain }}" >> $GITHUB_ENV
         echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
