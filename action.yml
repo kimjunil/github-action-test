@@ -4,10 +4,13 @@ inputs:
   version:
     description: 'Version of launchplan'
     required: true
-  project:  # id of input
+  flyte_project:  # id of input
     description: 'Project name'
     required: true
-  domain:  # id of input
+  flyte_domain:  # id of input
+    description: 'Project domain'
+    required: true
+  package:  # id of input
     description: 'Project domain'
     required: true
 runs:
@@ -40,9 +43,9 @@ runs:
     - name: Setup environment variables.
       run: |
         pip install yq==3.1.0
-        echo "FLYTE_PROJECT=${{ inputs.project }}" >> $GITHUB_ENV
-        echo "PROJECT_NAME=${{ inputs.project }}" >> $GITHUB_ENV
-        echo "FLYTE_DOMAIN=${{ inputs.domain }}" >> $GITHUB_ENV
+        echo "FLYTE_PROJECT=${{ inputs.flyte_project }}" >> $GITHUB_ENV
+        echo "PACKAGE_NAME=${{ inputs.package }}" >> $GITHUB_ENV
+        echo "FLYTE_DOMAIN=${{ inputs.flyte_domain }}" >> $GITHUB_ENV
         echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
         echo "FLYTE_ENDPOINT=$FLYTE_ENDPOINT" >> $GITHUB_ENV
         echo "FLYTE_CLIENT_ID=$FLYTE_CLIENT_ID" >> $GITHUB_ENV
@@ -90,8 +93,8 @@ runs:
     - name: Serialize project
       run: |
         mkdir _pb_output
-        echo pyflyte --pkgs ${{ env.PROJECT_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
-        pyflyte --pkgs ${{ env.PROJECT_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
+        echo pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
+        pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
       shell: bash
 
     - name: Register serialized project
