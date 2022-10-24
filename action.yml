@@ -11,7 +11,7 @@ inputs:
     description: 'Project domain'
     required: true
   package:  # id of input
-    description: 'Project domain'
+    description: 'Project package name'
     required: true
 runs:
   using: "composite"
@@ -55,12 +55,12 @@ runs:
     - name: Setup flyte_config.yaml
       run: |
         echo '${{ env.FLYTE_CLIENT_SECRET }}' >> /tmp/flyte_admin_secret
-        ./yq e --inplace '.admin.endpoint = "${{ env.FLYTE_ENDPOINT }}"' flyte_config.yaml
+        ./yq -n '.admin.endpoint = "${{ env.FLYTE_ENDPOINT }}"' > flyte_config.yaml
         ./yq e --inplace '.admin.authType = "ClientSecret"' flyte_config.yaml
         ./yq e --inplace '.admin.clientId = "${{ env.FLYTE_CLIENT_ID }}"' flyte_config.yaml
         ./yq e --inplace '.admin.clientSecretLocation = "/tmp/flyte_admin_secret"' flyte_config.yaml
         mkdir -p ~/.flyte
-        cp flyte_config.yaml ~/.flyte/config.yaml
+        mv flyte_config.yaml ~/.flyte/config.yaml
       shell: bash
       
     - name: Create project
