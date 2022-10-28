@@ -19,8 +19,8 @@ runs:
     - name: Setup docker tag.
       run: |
         echo "IMAGE_TAG=ghcr.io/kimjunil/action-test:${{ inputs.version }}" >> $GITHUB_ENV
-        echo "GH_USER=$GH_USER" >> $GITHUB_ENV
-        echo "GH_TOKEN=$GH_TOKEN" >> $GITHUB_ENV
+        echo "GH_USER=${{ secrets.GH_USER }}" >> $GITHUB_ENV
+        echo "GH_TOKEN${{ secrets.GH_TOKEN }}" >> $GITHUB_ENV
       shell: bash
     - name: Docker Build & Push
       run: |
