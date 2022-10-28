@@ -37,8 +37,8 @@ runs:
         context: .
         push: true
         tags: ${{ env.IMAGE_TAG }}
-        cache-from: type=registry,ref=user/app:buildcache
-        cache-to: type=registry,ref=user/app:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
 #     - name: Docker Build & Push
 #       run: |
