@@ -40,13 +40,11 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-#     - name: Docker Build & Push
-#       run: |
-#         docker login ghcr.io -u ${{ env.GH_USER }} -p ${{ env.GH_TOKEN }}
-#         docker build -t ${{ env.IMAGE_TAG }} .
-#         docker push  ${{ env.IMAGE_TAG }}
-#       shell: bash
-
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+        cache: 'pip' # caching pip dependencies
+        
     - name: Install tools
       run: |
         curl -sL https://ctl.flyte.org/install | bash
@@ -55,13 +53,11 @@ runs:
         sudo apt-get install wget jq -y
         wget https://github.com/mikefarah/yq/releases/download/v4.27.2/yq_linux_amd64 --output-document yq
         sudo chmod +x ./yq
-        pip install tomlq
-        pip install flytekit
+        pip install -r requirements.txt
       shell: bash
-
+      
     - name: Setup environment variables.
       run: |
-        pip install yq==3.1.0
         echo "FLYTE_PROJECT=${{ inputs.flyte_project }}" >> $GITHUB_ENV
         echo "PACKAGE_NAME=${{ inputs.package }}" >> $GITHUB_ENV
         echo "FLYTE_DOMAIN=${{ inputs.flyte_domain }}" >> $GITHUB_ENV
