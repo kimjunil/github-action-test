@@ -1,3 +1,0 @@
-tomlq
-flytekit==1.2.3
-yq==3.1.0
