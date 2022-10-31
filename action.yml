@@ -101,16 +101,17 @@ runs:
         done
       shell: bash
 
-#     - name: Serialize project
-#       run: |
-#         mkdir _pb_output
-#         echo pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
-#         pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
-#       shell: bash
-    - name: package project
+    - name: Serialize project
       run: |
-         pyflyte package -i ${{ env.IMAGE_TAG }} -o _pb_output/
+        mkdir _pb_output
+        echo pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
+        pyflyte --pkgs ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
       shell: bash
+      
+#     - name: package project
+#       run: |
+#          pyflyte package -i ${{ env.IMAGE_TAG }} -o _pb_output/
+#       shell: bash
 
     - name: Register serialized project
       run: |
