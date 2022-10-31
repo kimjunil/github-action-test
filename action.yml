@@ -53,7 +53,6 @@ runs:
         wget https://github.com/mikefarah/yq/releases/download/v4.27.2/yq_linux_amd64 --output-document yq
         sudo chmod +x ./yq
         pip install tomlq flytekit==1.2.3 yq==3.1.0
-        pip list
       shell: bash
       
     - name: Setup environment variables.
@@ -108,7 +107,6 @@ runs:
     - name: Serialize project
       run: |
         mkdir _pb_output
-        ls
         echo pyflyte -k ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
         pyflyte -k ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
       shell: bash
