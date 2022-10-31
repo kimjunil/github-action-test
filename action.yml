@@ -40,11 +40,6 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-        cache: 'pip' # caching pip dependencies
-        
     - name: Install tools
       run: |
         curl -sL https://ctl.flyte.org/install | bash
