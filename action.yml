@@ -104,6 +104,7 @@ runs:
     - name: Serialize project
       run: |
         mkdir _pb_output
+        ls
         echo pyflyte -k ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
         pyflyte -k ${{ env.PACKAGE_NAME }} serialize --local-source-root . --image ${{ env.IMAGE_TAG }} workflows -f _pb_output/
       shell: bash
@@ -115,7 +116,6 @@ runs:
 
     - name: Register serialized project
       run: |
-        ls
         flytectl register files _pb_output/* -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }}
       shell: bash
       
