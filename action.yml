@@ -37,8 +37,12 @@ runs:
         context: .
         push: true
         tags: ${{ env.IMAGE_TAG }}
-#         cache-from: type=gha
-#         cache-to: type=gha,mode=max
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
 
     - name: Install tools
       run: |
