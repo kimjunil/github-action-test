@@ -69,6 +69,7 @@ runs:
         ./yq e --inplace '.admin.insecure = "true"' flyte_config.yaml
         ./yq e --inplace '.logger.show-source = "true"' flyte_config.yaml
         ./yq e --inplace '.logger.level = "0"' flyte_config.yaml
+        ./yq flyte_config.yaml
         mkdir -p ~/.flyte
         mv flyte_config.yaml ~/.flyte/config.yaml
       shell: bash
