@@ -115,6 +115,7 @@ runs:
 
     - name: Register serialized project
       run: |
+        ls
         flytectl register files _pb_output/* -p ${{ env.FLYTE_PROJECT }} -d ${{ env.FLYTE_DOMAIN }} --version ${{ env.VERSION }}
       shell: bash
       
